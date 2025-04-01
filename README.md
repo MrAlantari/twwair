@@ -10,16 +10,20 @@ The project is made in TypeScript using nodeJS, express and mongoDB.
 2. Inside the api/ folder open CMD or Terminal and type 'npm install'
 3. Set environment variables:
     - On Windows type:
+        ```
         set USER_LOGIN=value
         set USER_PASSWORD=value
+        ```
     - On macOS or Linux:
+        ```
         export USER_LOGIN=value
         export USER_PASSWORD=value
+        ```
    Replace value with your account's login and password.
 4. There are three ways to run project:
     - Run normally:
-        npm run
+        `npm run`
     - Run in development mode:
-        npm run dev
+        `npm run dev`
     - Watch for file changes:
-        npm run watch
+        `npm run watch`
