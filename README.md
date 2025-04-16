@@ -27,3 +27,13 @@ The project is made in TypeScript using nodeJS, express and mongoDB.
         `npm run dev`
     - Watch for file changes:
         `npm run watch`
+5. Inside the client/ folder open CMD or Terminal and type 'npm install'
+6. There are four ways to run project:
+    - Run in development mode:
+        `npm run dev`
+    - Build:
+        `npm run build`
+    - Lint:
+        `npm run lint`
+    - Preview:
+        `npm run preview`
