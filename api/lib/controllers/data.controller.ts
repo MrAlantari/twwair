@@ -5,6 +5,7 @@ import { IData } from '../modules/models/data.model';
 import DataService from '../modules/services/data.service';
 import { config } from 'process';
 import _config from '../config'
+import Joi from 'joi';
 
 
 class DataController implements Controller {
@@ -44,9 +45,9 @@ class DataController implements Controller {
     private getPeriodData = async (request: Request, response: Response, next: NextFunction) => {
         const { id, num } = request.params;
 
-        let limit = parseInt( num );
+        let limit = parseInt(num);
 
-        if ( !num ) {
+        if (!num) {
             limit = 1;
         }
 
@@ -60,19 +61,28 @@ class DataController implements Controller {
         const { air } = request.body;
         const { id } = request.params;
 
-        console.log(air[0])
-
-        const data: IData = {
-            temperature: air[0].temperature,
-            pressure: air[1].pressure,
-            humidity: air[2].humidity,
-            deviceId: parseInt(id),
-            readingDate: new Date()
-        }
-
-        console.log(data)
+        const schema = Joi.object({
+            air: Joi.array()
+                .items(
+                    Joi.object({
+                        id: Joi.number().integer().positive().required(),
+                        value: Joi.number().positive().required()
+                    })
+                )
+                .unique((a, b) => a.id === b.id),
+            deviceId: Joi.number().integer().positive().valid(parseInt(id, 10)).required()
+        });
 
         try {
+            const validateData = await schema.validateAsync({ air, deviceId: parseInt(id, 10) })
+
+            const data: IData = {
+                temperature: air[0].temperature,
+                pressure: air[1].pressure,
+                humidity: air[2].humidity,
+                deviceId: parseInt(id),
+                readingDate: new Date()
+            }
 
             await this.dataService.createData(data);
             response.status(200).json(data);
@@ -86,14 +96,14 @@ class DataController implements Controller {
 
     private cleanDeviceData = async (request: Request, response: Response, next: NextFunction) => {
         const { id } = request.params;
-        this.dataService.deleteData( id );
-        response.status( 200 ).json( `Data of device ${ id } has been deleted` );
+        this.dataService.deleteData(id);
+        response.status(200).json(`Data of device ${id} has been deleted`);
     }
 
     private cleanAllDevices = async (request: Request, response: Response, next: NextFunction) => {
-        for (let i = 0; i < _config.supportedDevicesNum; i++){
-            this.dataService.deleteData( i.toString() );
-            response.status( 200 ).json( `Data of device ${ i } has been deleted` );
+        for (let i = 0; i < _config.supportedDevicesNum; i++) {
+            this.dataService.deleteData(i.toString());
+            response.status(200).json(`Data of device ${i} has been deleted`);
         }
     }
 }
