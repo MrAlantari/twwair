@@ -11,9 +11,8 @@ import Joi from 'joi';
 class DataController implements Controller {
     public path = '/api/data';
     public router = Router();
-    private dataService = new DataService();
 
-    constructor() {
+    constructor(private dataService: DataService) {
         this.initializeRoutes();
     }
 

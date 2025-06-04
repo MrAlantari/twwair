@@ -31,7 +31,6 @@ export default class DataService {
         } catch ( error ) {
             throw new Error( `Query failed: ${ error }` );
         }
-
     }
 
     public async getAllNewest() {
