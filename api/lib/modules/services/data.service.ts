@@ -55,12 +55,9 @@ export default class DataService {
             try {
                 const now = new Date();
                 const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
-                console.log(now, oneHourAgo);
 
                 const data = await DataModel.find({ deviceId: i.toString(), readingDate: { $gte: oneHourAgo, $lt: new Date() } }, { __v: 0, _id: 0 })
                     .sort({ $natural: -1 });
-
-                console.log(data)
 
                 dataArray.push(data);
             } catch (error) {

@@ -43,7 +43,6 @@ class IndexController implements Controller {
                     if (!socket.data.user) 
                         throw new Error('Unauthorized');
                     
-                    console.log("działa?")
                     const data = await this.getDevicesData();
                     socket.emit('intervalData', data);
                 } catch (error) {
