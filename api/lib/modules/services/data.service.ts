@@ -1,46 +1,47 @@
 import DataModel from '../schemas/data.schema';
-import { IData, Query } from "../models/data.model";
+import { IData } from "../models/data.model";
 import config from '../../config'
 
 export default class DataService {
 
-    public async createData( dataParams: IData ) {
+    public async createData(dataParams: IData) {
         try {
-            const dataModel = new DataModel( dataParams );
+            const dataModel = new DataModel(dataParams);
             await dataModel.save();
-        } catch ( error ) {
-            console.error( 'Wystąpił błąd podczas tworzenia danych:', error );
-            throw new Error( 'Wystąpił błąd podczas tworzenia danych' );
+        } catch (error) {
+            console.error('Wystąpił błąd podczas tworzenia danych:', error);
+            throw new Error('Wystąpił błąd podczas tworzenia danych');
         }
     }
 
-    public async query( deviceID: string ) {
+    public async query(deviceID: string) {
         try {
             const data = await DataModel.find({ deviceId: deviceID }, { __v: 0, _id: 0 });
             return data;
         } catch (error) {
-            throw new Error( `Query failed: ${ error }` );
+            throw new Error(`Query failed: ${error}`);
         }
     }
 
-    public async getNewest( deviceID: string, limit: number ) {
+    public async getNewest(deviceID: string, limit: number) {
         try {
             const data = await DataModel.find({ deviceId: deviceID }, { __v: 0, _id: 0 })
-                .limit( limit ).sort({ $natural: -1 });
+                .limit(limit)
+                .sort({ $natural: -1 });
             return data;
-        } catch ( error ) {
-            throw new Error( `Query failed: ${ error }` );
+        } catch (error) {
+            throw new Error(`Query failed: ${error}`);
         }
     }
 
     public async getAllNewest() {
         let dataArray = [];
-        for ( let i = 0; i < config.supportedDevicesNum; i++ ) {
+        for (let i = 0; i < config.supportedDevicesNum; i++) {
             try {
-                const data = await this.getNewest( i.toString(), 1 );
-                dataArray.push( data );
-            } catch ( error ) {
-                console.error( `Error occured during getting data for device ${ i + 1 }: ${ error.message }` );
+                const data = await this.getNewest(i.toString(), 1);
+                dataArray.push(data);
+            } catch (error) {
+                console.error(`Error occured during getting data for device ${i + 1}: ${error.message}`);
                 dataArray.push({});
             }
 
@@ -48,11 +49,48 @@ export default class DataService {
         return dataArray;
     }
 
-    public async deleteData( deviceID: string ) {
+    public async getFromLastHour() {
+        let dataArray = [];
+        for (let i = 0; i < config.supportedDevicesNum; i++) {
+            try {
+                const now = new Date();
+                const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
+                console.log(now, oneHourAgo);
+
+                const data = await DataModel.find({ deviceId: i.toString(), readingDate: { $gte: oneHourAgo, $lt: new Date() } }, { __v: 0, _id: 0 })
+                    .sort({ $natural: -1 });
+
+                console.log(data)
+
+                dataArray.push(data);
+            } catch (error) {
+                console.error(`Error occured during getting data for device ${i + 1}: ${error.message}`);
+                dataArray.push({});
+            }
+        }
+        return dataArray;
+    }
+
+    public async deleteData(deviceID: string) {
         try {
             await DataModel.deleteOne({ deviceId: deviceID });
-        } catch ( error ) {
-            throw new Error( `Query failed ${ error }` );
+        } catch (error) {
+            throw new Error(`Query failed ${error}`);
+        }
+    }
+
+    public async deleteDataInRange(deviceID: string, startDate: Date, endDate: Date) {
+        try {
+            const result = await DataModel.deleteMany({
+                deviceId: deviceID,
+                readingDate: {
+                    $gte: startDate,
+                    $lte: endDate
+                }
+            });
+            return result.deletedCount;
+        } catch (error) {
+            throw new Error(`Delete in range failed: ${error}`);
         }
     }
 }

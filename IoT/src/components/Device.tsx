@@ -28,10 +28,21 @@ interface DeviceProps {
   initialData?: IData;
   isSelected?: boolean;
   isSmall?: boolean;
+  hasChange?: boolean;
 }
 
-function Device({ deviceId, initialData, isSelected = false, isSmall = false }: DeviceProps) {
+function Device({ deviceId, initialData, isSelected = false, isSmall = false, hasChange = false}: DeviceProps) {
   const theme = useTheme();
+
+  const borderColor = hasChange
+    ? isSelected 
+      ? theme.palette.error.dark
+      : theme.palette.error.main
+    : isSelected
+      ? theme.palette.primary.main
+      : 'none';
+
+    if (isSelected) console.log(hasChange);
 
   if (!initialData) {
     return (
@@ -48,7 +59,7 @@ function Device({ deviceId, initialData, isSelected = false, isSmall = false }: 
   if (isSmall) {
     return (
       <DevicePaper sx={{ 
-        border: isSelected ? `2px solid ${theme.palette.primary.main}` : 'none',
+        border: `2px solid ${borderColor}`,
         minWidth: 140 
       }}>
         <Typography variant="subtitle1" fontWeight="medium">Device No. {deviceId}</Typography>

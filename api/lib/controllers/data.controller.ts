@@ -3,7 +3,7 @@ import { Request, Response, NextFunction, Router } from 'express';
 import { checkIdParam } from '../middlewares/deviceIdParam.middleware';
 import { IData } from '../modules/models/data.model';
 import DataService from '../modules/services/data.service';
-import { config } from 'process';
+import { auth } from '../middlewares/auth.middleware';
 import _config from '../config'
 import Joi from 'joi';
 
@@ -18,6 +18,7 @@ class DataController implements Controller {
 
     private initializeRoutes() {
         this.router.get(`${this.path}/latest`, this.getLatestReadingsFromAllDevices);
+        this.router.get(`${this.path}/hour`, auth, this.getFromLastHour);
         this.router.get(`${this.path}/:id`, checkIdParam, this.getAllDeviceData);
         this.router.get(`${this.path}/:id/latest`, checkIdParam, this.getPeriodData);
         this.router.get(`${this.path}/:id/:num`, checkIdParam, this.getPeriodData);
@@ -26,6 +27,7 @@ class DataController implements Controller {
 
         this.router.delete(`${this.path}/all`, this.cleanAllDevices);
         this.router.delete(`${this.path}/:id`, checkIdParam, this.cleanDeviceData);
+        this.router.delete(`${this.path}/from-range/:id`, auth, checkIdParam, this.deleteFromRange)
     }
 
     //GET
@@ -54,6 +56,19 @@ class DataController implements Controller {
         response.status(200).json(data);
     };
 
+    private getFromLastHour = async (request: Request, response: Response, next: NextFunction) => {
+        const data = await this.dataService.getFromLastHour();
+
+        if (!data || data.length === 0) {
+        return response.status(404).json({
+          success: false,
+          message: 'No data found from the last hour'
+        });
+      }
+
+      response.status(200).json(data);
+    }
+
     //POST
 
     private addData = async (request: Request, response: Response, next: NextFunction) => {
@@ -76,9 +91,9 @@ class DataController implements Controller {
             const validateData = await schema.validateAsync({ air, deviceId: parseInt(id, 10) })
 
             const data: IData = {
-                temperature: air[0].temperature,
-                pressure: air[1].pressure,
-                humidity: air[2].humidity,
+                temperature: air[0].value,
+                pressure: air[1].value,
+                humidity: air[2].value,
                 deviceId: parseInt(id),
                 readingDate: new Date()
             }
@@ -103,6 +118,26 @@ class DataController implements Controller {
         for (let i = 0; i < _config.supportedDevicesNum; i++) {
             this.dataService.deleteData(i.toString());
             response.status(200).json(`Data of device ${i} has been deleted`);
+        }
+    }
+
+    private deleteFromRange = async (request: Request, response: Response, next: NextFunction) => {
+        try {
+            const { startDate, endDate } = request.body;
+            const deviceId = request.params['id'];
+
+            if (!startDate || !endDate) {
+                return response.status(400).json({message: 'Wymagane parametry: startDate, endDate'});
+            }
+
+            const deletedCount = await this.dataService.deleteDataInRange(deviceId, startDate, endDate);
+
+            response.status(200).json({
+                message: `Usunięto odczyty dla urządzenia ${deviceId}`,
+                deletedCount
+            })
+        } catch (error) {
+            next(error)
         }
     }
 }

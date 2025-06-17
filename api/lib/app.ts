@@ -24,6 +24,15 @@ class App {
         this.initializeSocket();
         this.initializeControllers(controllers);
         this.connectToDatabase();
+
+        this.app.use(
+            cors({
+                origin: "http://localhost:5173",
+                methods: ["GET", "POST", 'PATCH', 'DELETE', 'PUT', 'OPTIONS'],
+                allowedHeaders: ['Content-Type',"Authorization"],
+                credentials: true
+            })
+        )
     }
 
     private initializeControllers(controllers: Controller[]): void {
@@ -77,8 +86,8 @@ class App {
         this.io = new Server(this.server, {
             cors: {
                 origin: "http://localhost:5173",
-                methods: ["GET", "POST"],
-                allowedHeaders: ["Authorization"],
+                methods: ["GET", "POST", 'PATCH', 'DELETE', 'PUT', 'OPTIONS'],
+                allowedHeaders: ['Content-Type',"Authorization"],
                 credentials: true
             },
         });

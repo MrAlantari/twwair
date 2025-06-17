@@ -37,7 +37,6 @@ function DeviceChart({ deviceId, result }: DeviceChartProps) {
             {
               id: 'rightAxis',
               label: 'Ciśnienie (hPa)',
-              position: 'right',
             },
           ]}
           series={[
@@ -64,7 +63,7 @@ function DeviceChart({ deviceId, result }: DeviceChartProps) {
           rightAxis="rightAxis"
           dataset={chartData}
           height={400}
-          margin={{ left: 70, right: 70 }} // Zwiększony margines dla osi
+          margin={{ left: 70, right: 70 }}
         />
       </Box>
     </Box>

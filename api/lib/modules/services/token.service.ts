@@ -53,6 +53,30 @@ class TokenService {
             throw new Error('Error while removing token');
         }
     }
+
+    public async verifyToken(tokenValue: string) {
+        try {
+            const decoded = jwt.verify(tokenValue, config.JwtSecret) as any;
+
+            const tokenInDb = await TokenModel.findOne({
+                userId: decoded.userId,
+                value: tokenValue
+            });
+
+            if (!tokenInDb)
+                throw new Error('Token not found in database');
+
+            return {
+                id: decoded.userId,
+                email: decoded.name,
+                role: decoded.role,
+                isAdmin: decoded.isAdmin
+            };
+        } catch (error) {
+            console.error('Token verification failed:', error);
+            throw new Error('Invalid or expired token');
+        }
+    }
 }
 
 export default TokenService;

@@ -11,7 +11,19 @@ import Button from '@mui/material/Button';
 import MenuItem from '@mui/material/MenuItem';
 import LanguageIcon from '@mui/icons-material/Language';
 
-const pages = ['Devices state'];
+interface Page {
+    name: string;
+    route: string;
+}
+
+const pages: Page[] = [
+    { name: 'Devices state', route: '/devices-list' },
+    { name: 'Latest', route: 'latest' },
+    { name: 'Register', route: '/register' },
+    { name: 'Login', route: '/login' },
+    { name: 'Profile', route: '/profile' },
+    {name: 'Delete', route: '/delete-from-range'}
+];
 
 function Navbar() {
     const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
@@ -76,8 +88,8 @@ function Navbar() {
                             }}
                         >
                             {pages.map((page) => (
-                                <MenuItem key={page} onClick={handleCloseNavMenu}>
-                                    <Typography textAlign="center">{page}</Typography>
+                                <MenuItem key={page.name} onClick={handleCloseNavMenu}>
+                                    <Typography textAlign="center">{page.name}</Typography>
                                 </MenuItem>
                             ))}
                         </Menu>
@@ -85,11 +97,12 @@ function Navbar() {
                     <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
                         {pages.map((page) => (
                             <Button
-                                key={page}
+                                key={page.name}
                                 onClick={handleCloseNavMenu}
                                 sx={{ my: 2, color: 'white', display: 'block' }}
+                                href={page.route}
                             >
-                                {page}
+                                {page.name}
                             </Button>
                         ))}
                     </Box>
